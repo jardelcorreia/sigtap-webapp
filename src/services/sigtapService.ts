@@ -71,7 +71,6 @@ export const searchProcedures = async (
         <pag:Paginacao>
             <pag:registroInicial>1</pag:registroInicial>
             <pag:quantidadeRegistros>${filters.quantidadeRegistros}</pag:quantidadeRegistros>
-            <pag:totalRegistros>1000</pag:totalRegistros>
         </pag:Paginacao>
     </proc:requestPesquisarProcedimentos>
   `;
@@ -105,7 +104,6 @@ export const getProcedureDetails = async (
                 <det:Paginacao>
                     <pag:registroInicial>1</pag:registroInicial>
                     <pag:quantidadeRegistros>20</pag:quantidadeRegistros>
-                    <pag:totalRegistros>100</pag:totalRegistros>
                 </det:Paginacao>
             </det:DetalheAdicional>
         </proc:DetalhesAdicionais>
