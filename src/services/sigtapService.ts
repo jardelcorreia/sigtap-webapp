@@ -1,7 +1,7 @@
 import { Environment, ProcedureSearchResult, ProcedureDetails, Group, Subgroup } from '../types/sigtap';
 
 const environments = {
-  homologacao: 'https://servicoshm.saude.gov.br/sigtap/',
+  homologacao: '/api/sigtap/',
   producao: 'https://servicos.saude.gov.br/sigtap/'
 };
 
@@ -32,13 +32,26 @@ const createSOAPEnvelope = (operation: string, body: string): string => {
 };
 
 const makeSOAPCall = async (service: string, soapAction: string, xmlBody: string, environment: Environment): Promise<string> => {
-  // Para demonstração, retornamos uma resposta simulada
-  // Em produção, você deve implementar um proxy para evitar CORS
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve('<simulatedResponse>Dados do SIGTAP</simulatedResponse>');
-    }, 1000);
+  const url = `${environments[environment]}${service}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/soap+xml; charset=utf-8',
+      'SOAPAction': soapAction,
+    },
+    body: xmlBody,
   });
+
+  if (!response.ok) {
+    throw new Error(`SOAP call failed with status ${response.status}`);
+  }
+
+  return response.text();
+};
+
+const parseXML = (xmlString: string): Document => {
+  const parser = new DOMParser();
+  return parser.parseFromString(xmlString, 'text/xml');
 };
 
 export const searchProcedures = async (
@@ -64,14 +77,14 @@ export const searchProcedures = async (
   `;
 
   const xmlRequest = createSOAPEnvelope('pesquisarProcedimentos', soapBody);
-  await makeSOAPCall('ProcedimentoService/v1', 'pesquisarProcedimentos', xmlRequest, environment);
+  const xmlResponse = await makeSOAPCall('ProcedimentoService/v1', 'pesquisarProcedimentos', xmlRequest, environment);
+  const doc = parseXML(xmlResponse);
+  const procedureNodes = doc.querySelectorAll('procedimento');
 
-  // Retorna dados simulados
-  return [
-    { codigo: '0101010010', nome: 'AÇÃO EDUCATIVA/ORIENTAÇÃO EM GRUPO NA ATENÇÃO BÁSICA' },
-    { codigo: '0101010029', nome: 'AÇÃO EDUCATIVA/ORIENTAÇÃO INDIVIDUAL NA ATENÇÃO BÁSICA' },
-    { codigo: '0101010037', nome: 'ATIVIDADE EDUCATIVA/ORIENTAÇÃO EM GRUPO' }
-  ];
+  return Array.from(procedureNodes).map(node => ({
+    codigo: node.querySelector('codigo')?.textContent ?? '',
+    nome: node.querySelector('nome')?.textContent ?? '',
+  }));
 };
 
 export const getProcedureDetails = async (
@@ -100,37 +113,33 @@ export const getProcedureDetails = async (
   `;
 
   const xmlRequest = createSOAPEnvelope('detalharProcedimento', soapBody);
-  await makeSOAPCall('ProcedimentoService/v1', 'detalharProcedimento', xmlRequest, environment);
+  const xmlResponse = await makeSOAPCall('ProcedimentoService/v1', 'detalharProcedimento', xmlRequest, environment);
+  const doc = parseXML(xmlResponse);
+  const procedureNode = doc.querySelector('procedimento');
 
-  // Retorna dados simulados
   return {
-    codigo: filters.codigoProcedimento,
-    nome: 'CONSULTA MÉDICA EM ATENÇÃO BÁSICA',
-    descricao: 'Procedimento destinado à consulta médica na atenção básica...',
-    valorSH: 'R$ 10,00',
-    valorSA: 'R$ 8,00',
-    sexoPermitido: 'Ambos',
-    idadeMinima: '0 anos',
-    idadeMaxima: '110 anos'
+    codigo: procedureNode?.querySelector('codigo')?.textContent ?? '',
+    nome: procedureNode?.querySelector('nome')?.textContent ?? '',
+    descricao: procedureNode?.querySelector('descricao')?.textContent ?? '',
+    valorSH: procedureNode?.querySelector('valorSH')?.textContent ?? '',
+    valorSA: procedureNode?.querySelector('valorSA')?.textContent ?? '',
+    sexoPermitido: procedureNode?.querySelector('sexoPermitido')?.textContent ?? '',
+    idadeMinima: procedureNode?.querySelector('idadeMinima')?.textContent ?? '',
+    idadeMaxima: procedureNode?.querySelector('idadeMaxima')?.textContent ?? '',
   };
 };
 
 export const listGroups = async (environment: Environment): Promise<Group[]> => {
   const soapBody = `<niv:requestListarGrupos/>`;
   const xmlRequest = createSOAPEnvelope('listarGrupos', soapBody);
-  await makeSOAPCall('NivelAgregacaoService/v1', 'listarGrupos', xmlRequest, environment);
+  const xmlResponse = await makeSOAPCall('NivelAgregacaoService/v1', 'listarGrupos', xmlRequest, environment);
+  const doc = parseXML(xmlResponse);
+  const groupNodes = doc.querySelectorAll('Grupo');
 
-  // Retorna dados simulados
-  return [
-    { codigo: '01', nome: 'AÇÕES DE PROMOÇÃO E PREVENÇÃO EM SAÚDE' },
-    { codigo: '02', nome: 'PROCEDIMENTOS COM FINALIDADE DIAGNÓSTICA' },
-    { codigo: '03', nome: 'PROCEDIMENTOS CLÍNICOS' },
-    { codigo: '04', nome: 'PROCEDIMENTOS CIRÚRGICOS' },
-    { codigo: '05', nome: 'TRANSPLANTES DE ÓRGÃOS, TECIDOS E CÉLULAS' },
-    { codigo: '06', nome: 'MEDICAMENTOS' },
-    { codigo: '07', nome: 'ÓRTESES, PRÓTESES E MATERIAIS ESPECIAIS' },
-    { codigo: '08', nome: 'AÇÕES COMPLEMENTARES DA ATENÇÃO À SAÚDE' }
-  ];
+  return Array.from(groupNodes).map(node => ({
+    codigo: node.querySelector('codigoGrupo')?.textContent ?? '',
+    nome: node.querySelector('nomeGrupo')?.textContent ?? '',
+  }));
 };
 
 export const listSubgroups = async (codigoGrupo: string, environment: Environment): Promise<Subgroup[]> => {
@@ -141,12 +150,13 @@ export const listSubgroups = async (codigoGrupo: string, environment: Environmen
   `;
 
   const xmlRequest = createSOAPEnvelope('listarSubgrupos', soapBody);
-  await makeSOAPCall('NivelAgregacaoService/v1', 'listarSubgrupos', xmlRequest, environment);
+  const xmlResponse = await makeSOAPCall('NivelAgregacaoService/v1', 'listarSubgrupos', xmlRequest, environment);
+  const doc = parseXML(xmlResponse);
+  const subgroupNodes = doc.querySelectorAll('Subgrupo');
 
-  // Retorna dados simulados
-  return [
-    { codigo: '01', nome: 'AÇÕES DE PROMOÇÃO DA SAÚDE', grupo: codigoGrupo },
-    { codigo: '02', nome: 'AÇÕES DE PREVENÇÃO EM SAÚDE', grupo: codigoGrupo },
-    { codigo: '03', nome: 'AÇÕES COLETIVAS EM SAÚDE', grupo: codigoGrupo }
-  ];
+  return Array.from(subgroupNodes).map(node => ({
+    codigo: node.querySelector('codigoSubgrupo')?.textContent ?? '',
+    nome: node.querySelector('nomeSubgrupo')?.textContent ?? '',
+    grupo: codigoGrupo,
+  }));
 };
