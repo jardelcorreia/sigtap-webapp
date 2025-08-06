@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/sigtap/:path*",
+      "destination": "https://servicoshm.saude.gov.br/sigtap/:path*"
+    }
+  ]
+}
