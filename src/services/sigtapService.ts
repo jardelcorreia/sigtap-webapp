@@ -1,5 +1,5 @@
 import { Environment, ProcedureSearchResult, ProcedureDetails, Group, Subgroup } from '../types/sigtap';
-import { db } from './dbService';
+import { db, searchProcedures as searchProceduresFromDb, getProcedureDetails as getProcedureDetailsFromDb, listGroups as listGroupsFromDb, listSubgroups as listSubgroupsFromDb } from './dbService';
 
 const environments = {
   homologacao: '/api/sigtap/',
@@ -64,7 +64,7 @@ export const searchProcedures = async (
   },
   environment: Environment
 ): Promise<ProcedureSearchResult[]> => {
-  const localProcedures = await db.searchProcedures(filters);
+  const localProcedures = await searchProceduresFromDb(filters);
   if (localProcedures.length > 0) {
     return localProcedures.map(p => ({ codigo: p.codigo, nome: p.nome }));
   }
@@ -114,7 +114,7 @@ export const getProcedureDetails = async (
   },
   environment: Environment
 ): Promise<ProcedureDetails> => {
-  const localProcedure = await db.procedures.get(filters.codigoProcedimento);
+  const localProcedure = await getProcedureDetailsFromDb(filters.codigoProcedimento);
   if (localProcedure) {
     return localProcedure;
   }
@@ -161,7 +161,7 @@ export const getProcedureDetails = async (
 };
 
 export const listGroups = async (environment: Environment): Promise<Group[]> => {
-  const localGroups = await db.groups.toArray();
+  const localGroups = await listGroupsFromDb();
   if (localGroups.length > 0) {
     return localGroups;
   }
@@ -187,7 +187,7 @@ export const listGroups = async (environment: Environment): Promise<Group[]> => 
 };
 
 export const listSubgroups = async (codigoGrupo: string, environment: Environment): Promise<Subgroup[]> => {
-  const localSubgroups = await db.subgroups.where('grupo').equals(codigoGrupo).toArray();
+  const localSubgroups = await listSubgroupsFromDb(codigoGrupo);
   if (localSubgroups.length > 0) {
     return localSubgroups;
   }

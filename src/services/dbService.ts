@@ -19,33 +19,33 @@ class SigtapDatabase extends Dexie {
   }
 }
 
-export const db = new SigtapDatabase();
+const db = new SigtapDatabase();
 
-export const addGroups = async (groups: Group[]) => {
+const addGroups = async (groups: Group[]) => {
   await db.groups.bulkPut(groups);
 };
 
-export const addSubgroups = async (subgroups: Subgroup[]) => {
+const addSubgroups = async (subgroups: Subgroup[]) => {
   await db.subgroups.bulkPut(subgroups);
 };
 
-export const addProcedures = async (procedures: ProcedureDetails[]) => {
+const addProcedures = async (procedures: ProcedureDetails[]) => {
   await db.procedures.bulkPut(procedures);
 };
 
-export const getGroups = async (): Promise<Group[]> => {
+const getGroups = async (): Promise<Group[]> => {
   return db.groups.toArray();
 };
 
-export const getSubgroups = async (codigoGrupo: string): Promise<Subgroup[]> => {
+const getSubgroups = async (codigoGrupo: string): Promise<Subgroup[]> => {
   return db.subgroups.where('grupo').equals(codigoGrupo).toArray();
 };
 
-export const getProcedureDetails = async (codigoProcedimento: string): Promise<ProcedureDetails | undefined> => {
+const getProcedureDetails = async (codigoProcedimento: string): Promise<ProcedureDetails | undefined> => {
   return db.procedures.get(codigoProcedimento);
 };
 
-export const searchProcedures = async (filters: {
+const searchProcedures = async (filters: {
   codigoGrupo: string;
   codigoSubgrupo?: string;
 }): Promise<ProcedureDetails[]> => {
@@ -54,4 +54,15 @@ export const searchProcedures = async (filters: {
     collection = collection.and(procedure => procedure.codigo.startsWith(`${filters.codigoGrupo}${filters.codigoSubgrupo}`));
   }
   return collection.toArray();
+};
+
+export {
+  db,
+  addGroups,
+  addSubgroups,
+  addProcedures,
+  getGroups,
+  getSubgroups,
+  getProcedureDetails,
+  searchProcedures
 };
