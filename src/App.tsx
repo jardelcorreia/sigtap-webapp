@@ -4,12 +4,10 @@ import TabNavigation from './components/TabNavigation';
 import SearchProcedures from './components/SearchProcedures';
 import ProcedureDetails from './components/ProcedureDetails';
 import GroupsSubgroups from './components/GroupsSubgroups';
-import ApiInfo from './components/ApiInfo';
 import { TabType, Environment } from './types/sigtap';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('search');
-  const [environment, setEnvironment] = useState<Environment>('producao');
   const [selectedProcedureCode, setSelectedProcedureCode] = useState<string>('');
 
   const handleTabChange = (tab: TabType) => {
@@ -21,28 +19,22 @@ function App() {
     setActiveTab('details');
   };
 
-  const handleToggleEnvironment = () => {
-    setEnvironment(prev => prev === 'homologacao' ? 'producao' : 'homologacao');
-  };
-
   const renderContent = () => {
     switch (activeTab) {
       case 'search':
         return (
           <SearchProcedures
-            environment={environment}
             onShowProcedureDetails={handleShowProcedureDetails}
           />
         );
       case 'details':
         return (
           <ProcedureDetails
-            environment={environment}
             initialCode={selectedProcedureCode}
           />
         );
       case 'groups':
-        return <GroupsSubgroups environment={environment} />;
+        return <GroupsSubgroups />;
       default:
         return null;
     }
@@ -56,10 +48,6 @@ function App() {
         <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
           {renderContent()}
         </div>
-        <ApiInfo
-          environment={environment}
-          onToggleEnvironment={handleToggleEnvironment}
-        />
       </main>
     </div>
   );

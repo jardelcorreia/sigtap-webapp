@@ -5,13 +5,11 @@ import { searchProcedures } from '../services/sigtapService';
 import { validarCompetencia, formatNumericInput, getCurrentCompetencia } from '../utils/validation';
 
 interface SearchProceduresProps {
-  environment: 'homologacao' | 'producao';
   onShowProcedureDetails: (codigo: string) => void;
 }
 
-const SearchProcedures: React.FC<SearchProceduresProps> = ({ 
-  environment, 
-  onShowProcedureDetails 
+const SearchProcedures: React.FC<SearchProceduresProps> = ({
+  onShowProcedureDetails
 }) => {
   const [filters, setFilters] = useState<SearchFilters>({
     codigoGrupo: '',
@@ -55,7 +53,7 @@ const SearchProcedures: React.FC<SearchProceduresProps> = ({
     setResults([]);
 
     try {
-      const procedureResults = await searchProcedures(filters, environment);
+      const procedureResults = await searchProcedures(filters, 'producao');
       setResults(procedureResults);
       setSuccess('Procedimentos encontrados com sucesso! (Demonstração)');
     } catch (err) {

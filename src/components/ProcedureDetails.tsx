@@ -5,14 +5,10 @@ import { getProcedureDetails } from '../services/sigtapService';
 import { validarCompetencia, formatNumericInput, getCurrentCompetencia } from '../utils/validation';
 
 interface ProcedureDetailsProps {
-  environment: 'homologacao' | 'producao';
   initialCode?: string;
 }
 
-const ProcedureDetails: React.FC<ProcedureDetailsProps> = ({ 
-  environment, 
-  initialCode = '' 
-}) => {
+const ProcedureDetails: React.FC<ProcedureDetailsProps> = ({ initialCode = '' }) => {
   const [filters, setFilters] = useState<DetailFilters>({
     codigoProcedimento: initialCode,
     competenciaDetalhe: '',
@@ -60,7 +56,7 @@ const ProcedureDetails: React.FC<ProcedureDetailsProps> = ({
     setDetails(null);
 
     try {
-      const procedureDetails = await getProcedureDetails(filters, environment);
+      const procedureDetails = await getProcedureDetails(filters, 'producao');
       setDetails(procedureDetails);
       setSuccess('Detalhes do procedimento carregados com sucesso! (Demonstração)');
     } catch (err) {

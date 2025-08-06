@@ -3,11 +3,7 @@ import { BarChart3, List, Loader2 } from 'lucide-react';
 import { Group, Subgroup } from '../types/sigtap';
 import { listGroups, listSubgroups } from '../services/sigtapService';
 
-interface GroupsSubgroupsProps {
-  environment: 'homologacao' | 'producao';
-}
-
-const GroupsSubgroups: React.FC<GroupsSubgroupsProps> = ({ environment }) => {
+const GroupsSubgroups: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [groups, setGroups] = useState<Group[]>([]);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
@@ -35,7 +31,7 @@ const GroupsSubgroups: React.FC<GroupsSubgroupsProps> = ({ environment }) => {
     setSubgroups([]);
 
     try {
-      const groupsList = await listGroups(environment);
+      const groupsList = await listGroups('producao');
       setGroups(groupsList);
       setSuccess('Grupos listados com sucesso! (Demonstração)');
     } catch (err) {
@@ -59,7 +55,7 @@ const GroupsSubgroups: React.FC<GroupsSubgroupsProps> = ({ environment }) => {
     setSubgroups([]);
 
     try {
-      const subgroupsList = await listSubgroups(selectedGroup, environment);
+      const subgroupsList = await listSubgroups(selectedGroup, 'producao');
       setSubgroups(subgroupsList);
       setSuccess(`Subgrupos do grupo ${selectedGroup} listados com sucesso! (Demonstração)`);
     } catch (err) {
@@ -77,7 +73,7 @@ const GroupsSubgroups: React.FC<GroupsSubgroupsProps> = ({ environment }) => {
     setSubgroups([]);
 
     try {
-      const subgroupsList = await listSubgroups(codigoGrupo, environment);
+      const subgroupsList = await listSubgroups(codigoGrupo, 'producao');
       setSubgroups(subgroupsList);
       setSuccess(`Subgrupos do grupo ${codigoGrupo} listados com sucesso! (Demonstração)`);
     } catch (err) {
