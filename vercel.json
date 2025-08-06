@@ -3,6 +3,10 @@
     {
       "source": "/api/sigtap/:path*",
       "destination": "https://servicoshm.saude.gov.br/sigtap/:path*"
+    },
+    {
+      "source": "/api-prod/sigtap/:path*",
+      "destination": "https://servicos.saude.gov.br/sigtap/:path*"
     }
   ]
 }

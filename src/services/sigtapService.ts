@@ -2,7 +2,7 @@ import { Environment, ProcedureSearchResult, ProcedureDetails, Group, Subgroup }
 
 const environments = {
   homologacao: '/api/sigtap/',
-  producao: 'https://servicos.saude.gov.br/sigtap/'
+  producao: '/api-prod/sigtap/'
 };
 
 const createSOAPEnvelope = (operation: string, body: string): string => {

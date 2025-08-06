@@ -11,6 +11,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
+      '/api-prod': {
+        target: 'https://servicos.saude.gov.br',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api-prod/, ''),
+      },
     },
   },
   optimizeDeps: {
