@@ -74,6 +74,18 @@ export const searchProcedures = async (
     throw new Error('Serviço offline. Sincronize os dados para usar a aplicação offline.');
   }
 
+  return searchProceduresSOAP(filters, environment);
+};
+
+export const searchProceduresSOAP = async (
+  filters: {
+    codigoGrupo: string;
+    codigoSubgrupo?: string;
+    competencia?: string;
+    quantidadeRegistros: string;
+  },
+  environment: Environment
+): Promise<ProcedureSearchResult[]> => {
   const soapBody = `
     <proc:requestPesquisarProcedimentos>
         <grup:codigoGrupo>${filters.codigoGrupo}</grup:codigoGrupo>
@@ -124,6 +136,17 @@ export const getProcedureDetails = async (
     throw new Error('Serviço offline. Sincronize os dados para usar a aplicação offline.');
   }
 
+  return getProcedureDetailsSOAP(filters, environment);
+};
+
+export const getProcedureDetailsSOAP = async (
+  filters: {
+    codigoProcedimento: string;
+    competenciaDetalhe?: string;
+    categoriaDetalhes: string;
+  },
+  environment: Environment
+): Promise<ProcedureDetails> => {
   const soapBody = `
     <proc:requestDetalharProcedimento>
         <proc1:codigoProcedimento>${filters.codigoProcedimento}</proc1:codigoProcedimento>
@@ -171,6 +194,10 @@ export const listGroups = async (environment: Environment): Promise<Group[]> => 
     throw new Error('Serviço offline. Sincronize os dados para usar a aplicação offline.');
   }
 
+  return listGroupsSOAP(environment);
+};
+
+export const listGroupsSOAP = async (environment: Environment): Promise<Group[]> => {
   const soapBody = `<niv:requestListarGrupos/>`;
   const xmlRequest = createSOAPEnvelope('listarGrupos', soapBody);
   const xmlResponse = await makeSOAPCall('NivelAgregacaoService/v1', 'listarGrupos', xmlRequest, environment);
@@ -197,6 +224,10 @@ export const listSubgroups = async (codigoGrupo: string, environment: Environmen
     throw new Error('Serviço offline. Sincronize os dados para usar a aplicação offline.');
   }
 
+  return listSubgroupsSOAP(codigoGrupo, environment);
+};
+
+export const listSubgroupsSOAP = async (codigoGrupo: string, environment: Environment): Promise<Subgroup[]> => {
   const soapBody = `
     <niv:requestListarSubgrupos>
         <grup:codigoGrupo>${codigoGrupo}</grup:codigoGrupo>
@@ -220,7 +251,7 @@ export const listSubgroups = async (codigoGrupo: string, environment: Environmen
 
 export const checkServiceStatus = async (): Promise<boolean> => {
   try {
-    await listGroups('producao');
+    await listGroupsSOAP('producao');
     return true;
   } catch (error) {
     return false;
