@@ -1,4 +1,5 @@
 import { Environment, ProcedureSearchResult, ProcedureDetails, Group, Subgroup } from '../types/sigtap';
+import { db } from './dbService';
 
 const environments = {
   homologacao: '/api/sigtap/',
@@ -63,6 +64,16 @@ export const searchProcedures = async (
   },
   environment: Environment
 ): Promise<ProcedureSearchResult[]> => {
+  const localProcedures = await db.searchProcedures(filters);
+  if (localProcedures.length > 0) {
+    return localProcedures.map(p => ({ codigo: p.codigo, nome: p.nome }));
+  }
+
+  const isOnline = await checkServiceStatus();
+  if (!isOnline) {
+    throw new Error('Serviço offline. Sincronize os dados para usar a aplicação offline.');
+  }
+
   const soapBody = `
     <proc:requestPesquisarProcedimentos>
         <grup:codigoGrupo>${filters.codigoGrupo}</grup:codigoGrupo>
@@ -80,10 +91,19 @@ export const searchProcedures = async (
   const doc = parseXML(xmlResponse);
   const procedureNodes = doc.querySelectorAll('procedimento');
 
-  return Array.from(procedureNodes).map(node => ({
+  const procedures = Array.from(procedureNodes).map(node => ({
     codigo: node.querySelector('codigo')?.textContent ?? '',
     nome: node.querySelector('nome')?.textContent ?? '',
+    descricao: '',
+    valorSH: '',
+    valorSA: '',
+    sexoPermitido: '',
+    idadeMinima: '',
+    idadeMaxima: '',
   }));
+
+  await db.procedures.bulkPut(procedures);
+  return procedures.map(p => ({ codigo: p.codigo, nome: p.nome }));
 };
 
 export const getProcedureDetails = async (
@@ -94,6 +114,16 @@ export const getProcedureDetails = async (
   },
   environment: Environment
 ): Promise<ProcedureDetails> => {
+  const localProcedure = await db.procedures.get(filters.codigoProcedimento);
+  if (localProcedure) {
+    return localProcedure;
+  }
+
+  const isOnline = await checkServiceStatus();
+  if (!isOnline) {
+    throw new Error('Serviço offline. Sincronize os dados para usar a aplicação offline.');
+  }
+
   const soapBody = `
     <proc:requestDetalharProcedimento>
         <proc1:codigoProcedimento>${filters.codigoProcedimento}</proc1:codigoProcedimento>
@@ -115,7 +145,7 @@ export const getProcedureDetails = async (
   const doc = parseXML(xmlResponse);
   const procedureNode = doc.querySelector('procedimento');
 
-  return {
+  const procedureDetails = {
     codigo: procedureNode?.querySelector('codigo')?.textContent ?? '',
     nome: procedureNode?.querySelector('nome')?.textContent ?? '',
     descricao: procedureNode?.querySelector('descricao')?.textContent ?? '',
@@ -125,22 +155,48 @@ export const getProcedureDetails = async (
     idadeMinima: procedureNode?.querySelector('idadeMinima')?.textContent ?? '',
     idadeMaxima: procedureNode?.querySelector('idadeMaxima')?.textContent ?? '',
   };
+
+  await db.procedures.put(procedureDetails);
+  return procedureDetails;
 };
 
 export const listGroups = async (environment: Environment): Promise<Group[]> => {
+  const localGroups = await db.groups.toArray();
+  if (localGroups.length > 0) {
+    return localGroups;
+  }
+
+  const isOnline = await checkServiceStatus();
+  if (!isOnline) {
+    throw new Error('Serviço offline. Sincronize os dados para usar a aplicação offline.');
+  }
+
   const soapBody = `<niv:requestListarGrupos/>`;
   const xmlRequest = createSOAPEnvelope('listarGrupos', soapBody);
   const xmlResponse = await makeSOAPCall('NivelAgregacaoService/v1', 'listarGrupos', xmlRequest, environment);
   const doc = parseXML(xmlResponse);
   const groupNodes = doc.querySelectorAll('Grupo');
 
-  return Array.from(groupNodes).map(node => ({
+  const groups = Array.from(groupNodes).map(node => ({
     codigo: node.querySelector('codigoGrupo')?.textContent ?? '',
     nome: node.querySelector('nomeGrupo')?.textContent ?? '',
   }));
+
+  await db.groups.bulkPut(groups);
+  return groups;
 };
 
 export const listSubgroups = async (codigoGrupo: string, environment: Environment): Promise<Subgroup[]> => {
+  const localSubgroups = await db.subgroups.where('grupo').equals(codigoGrupo).toArray();
+  if (localSubgroups.length > 0) {
+    return localSubgroups;
+  }
+
+  const isOnline = await checkServiceStatus();
+  if (!isOnline) {
+    throw new Error('Serviço offline. Sincronize os dados para usar a aplicação offline.');
+  }
+
   const soapBody = `
     <niv:requestListarSubgrupos>
         <grup:codigoGrupo>${codigoGrupo}</grup:codigoGrupo>
@@ -152,9 +208,21 @@ export const listSubgroups = async (codigoGrupo: string, environment: Environmen
   const doc = parseXML(xmlResponse);
   const subgroupNodes = doc.querySelectorAll('Subgrupo');
 
-  return Array.from(subgroupNodes).map(node => ({
+  const subgroups = Array.from(subgroupNodes).map(node => ({
     codigo: node.querySelector('codigoSubgrupo')?.textContent ?? '',
     nome: node.querySelector('nomeSubgrupo')?.textContent ?? '',
     grupo: codigoGrupo,
   }));
+
+  await db.subgroups.bulkPut(subgroups);
+  return subgroups;
+};
+
+export const checkServiceStatus = async (): Promise<boolean> => {
+  try {
+    await listGroups('producao');
+    return true;
+  } catch (error) {
+    return false;
+  }
 };

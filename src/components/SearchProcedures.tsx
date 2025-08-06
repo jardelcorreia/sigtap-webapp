@@ -6,10 +6,12 @@ import { validarCompetencia, formatNumericInput, getCurrentCompetencia } from '.
 
 interface SearchProceduresProps {
   onShowProcedureDetails: (codigo: string) => void;
+  isOnline: boolean;
 }
 
 const SearchProcedures: React.FC<SearchProceduresProps> = ({
-  onShowProcedureDetails
+  onShowProcedureDetails,
+  isOnline
 }) => {
   const [filters, setFilters] = useState<SearchFilters>({
     codigoGrupo: '',
@@ -76,6 +78,13 @@ const SearchProcedures: React.FC<SearchProceduresProps> = ({
         <Search size={24} />
         Pesquisar Procedimentos
       </h2>
+
+      {!isOnline && (
+        <div className="mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">
+          <p className="font-bold">Modo Offline</p>
+          <p>A pesquisa está sendo feita nos dados salvos localmente.</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

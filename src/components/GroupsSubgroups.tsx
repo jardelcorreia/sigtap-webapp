@@ -3,7 +3,11 @@ import { BarChart3, List, Loader2 } from 'lucide-react';
 import { Group, Subgroup } from '../types/sigtap';
 import { listGroups, listSubgroups } from '../services/sigtapService';
 
-const GroupsSubgroups: React.FC = () => {
+interface GroupsSubgroupsProps {
+  isOnline: boolean;
+}
+
+const GroupsSubgroups: React.FC<GroupsSubgroupsProps> = ({ isOnline }) => {
   const [selectedGroup, setSelectedGroup] = useState<string>('');
   const [groups, setGroups] = useState<Group[]>([]);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
@@ -89,6 +93,13 @@ const GroupsSubgroups: React.FC = () => {
         <BarChart3 size={24} />
         Consultar Grupos e Subgrupos
       </h2>
+
+      {!isOnline && (
+        <div className="mb-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">
+          <p className="font-bold">Modo Offline</p>
+          <p>A pesquisa está sendo feita nos dados salvos localmente.</p>
+        </div>
+      )}
 
       <div className="mb-6">
         <button
