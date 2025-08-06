@@ -9,7 +9,7 @@ import { TabType, Environment } from './types/sigtap';
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabType>('search');
-  const [environment, setEnvironment] = useState<Environment>('homologacao');
+  const [environment, setEnvironment] = useState<Environment>('producao');
   const [selectedProcedureCode, setSelectedProcedureCode] = useState<string>('');
 
   const handleTabChange = (tab: TabType) => {
