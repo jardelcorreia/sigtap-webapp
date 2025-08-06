@@ -1,5 +1,5 @@
 import { Environment, ProcedureSearchResult, ProcedureDetails, Group, Subgroup } from '../types/sigtap';
-import { db, searchProcedures as searchProceduresFromDb, getProcedureDetails as getProcedureDetailsFromDb, listGroups as listGroupsFromDb, listSubgroups as listSubgroupsFromDb } from './dbService';
+import { db, searchProcedures as searchProceduresFromDb, getProcedureDetails as getProcedureDetailsFromDb, getGroups as listGroupsFromDb, getSubgroups as listSubgroupsFromDb } from './dbService';
 
 const environments = {
   homologacao: '/api/sigtap/',
