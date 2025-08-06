@@ -1,11 +1,11 @@
 import React from 'react';
-import { Hospital } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 
 const Header: React.FC = () => {
   return (
     <div className="bg-gradient-to-r from-slate-800 to-blue-600 text-white p-8 text-center">
       <div className="flex items-center justify-center gap-3 mb-3">
-        <Hospital size={40} className="text-white" />
+        <Building2 size={40} className="text-white" />
         <h1 className="text-4xl font-bold drop-shadow-lg">SIGTAP WebApp</h1>
       </div>
       <p className="text-lg opacity-90">
